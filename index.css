@@ -1,4 +1,80 @@
 body {
-    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     background-color: black;
+    color: white;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    height: 100vh;
+    justify-content: center;
+}
+
+#main-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+#game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#game-board {
+    display: grid;
+    grid-template-columns: repeat(10, 40px);
+    grid-template-rows: repeat(10, 40px);
+    gap: 2px;
+}
+
+.cell {
+    width: 40px;
+    height: 40px;
+    background-color: blue;
+}
+
+.pacman {
+    background-color: yellow;
+    border-radius: 50%;
+}
+
+.ghost {
+    background-color: red;
+    border-radius: 50%;
+}
+
+#scoreboard {
+    margin-top: 20px;
+    width: 200px;
+    background-color: #333;
+    color: white;
+    padding: 10px;
+}
+
+#pause-button {
+    margin-top: 20px;
+    background-color: #444;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.coin {
+    width: 20px;
+    height: 20px;
+    background-color: gold;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+#start-button {
+    color: lightyellow;
+    height: 20vh;
+    border-radius: 25% 25% 25% 25%;
+    width: 20vw;
 }

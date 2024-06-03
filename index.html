@@ -3,12 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pacman</title>
+    <title>Pac-Man Game</title>
     <link rel="stylesheet" href="index.css">
-  
 </head>
 <body>
-    <canvas></canvas>
- <script src="index.js"></script>
+    <h1>pacman</h1>
+    <div id="main-screen">
+        <button id="start-button">Start Game</button>
+    </div>
+    <div id="game-container" style="display:none;">
+        <div id="game-board"></div>
+        <div id="scoreboard"></div>
+        <button id="pause-button">Pause</button>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
