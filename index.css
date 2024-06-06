@@ -34,17 +34,19 @@ body {
 .cell {
     width: 40px;
     height: 40px;
-    background-color: blue;
+    border: 2px solid blue;
 }
 
 .pacman {
     background-color: yellow;
     border-radius: 50%;
+    border-width: 0;
 }
 
 .ghost {
     background-color: red;
     border-radius: 50%;
+    border-width: 0;
 }
 
 #scoreboard {

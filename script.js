@@ -59,12 +59,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function addCoinsToBoard() {
-        elements.forEach(element => {
-            if (element.type === "coin") {
-                const coinCell = document.querySelector(`[data-x="${element.x}"][data-y="${element.y}"]`);
+        setInterval(() => {
+            if (!gamePaused && elements.filter(element => element.type === "coin").length < 5) {
+                const x = Math.floor(Math.random() * boardSize);
+                const y = Math.floor(Math.random() * boardSize);
+                elements.push({ type: "coin", x: x, y: y });
+                const coinCell = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
                 coinCell.classList.add("coin");
             }
-        });
+        }, 5000); // Add a new coin every 5 seconds
     }
 
     function pickUpCoin() {
@@ -72,8 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (pacmanPosition.x === element.x && pacmanPosition.y === element.y && element.type === "coin") {
                 const coinCell = document.querySelector(`[data-x="${element.x}"][data-y="${element.y}"]`);
                 coinCell.classList.remove("coin");
-
-                score += 10;
+                score += 20;
                 updateScore();
                 elements.splice(index, 1);
             }
@@ -82,7 +84,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function movePacman(event) {
         if (gamePaused) return;
-
         switch (event.key) {
             case "ArrowUp":
                 if (pacmanPosition.y > 0) pacmanPosition.y--;
@@ -104,11 +105,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function moveGhosts() {
         if (gamePaused) return;
-
         ghosts.forEach(ghost => {
             const directions = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
             let direction;
-
             if (Math.random() < 0.7) {
                 if (Math.abs(pacmanPosition.x - ghost.x) > Math.abs(pacmanPosition.y - ghost.y)) {
                     direction = pacmanPosition.x > ghost.x ? "ArrowRight" : "ArrowLeft";
@@ -118,7 +117,6 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 direction = directions[Math.floor(Math.random() * directions.length)];
             }
-
             switch (direction) {
                 case "ArrowUp":
                     if (ghost.y > 0) ghost.y--;
