@@ -5,133 +5,182 @@ document.addEventListener("DOMContentLoaded", () => {
     const pauseButton = document.getElementById("pause-button");
     const mainScreen = document.getElementById("main-screen");
     const gameContainer = document.getElementById("game-container");
-    const boardSize = 10;
-    let pacmanPosition = { x: 0, y: 0 };
-    let ghosts = [
-        { x: 9, y: 9 },
-        { x: 5, y: 5 },
-        { x: 3, y: 7 }
-    ];
-    const elements = [
-        { type: "coin", x: 2, y: 5 },
-        { type: "coin", x: 8, y: 3 }
-    ];
+    const gameOverModal = document.getElementById("game-over-modal");
+    const finalScore = document.getElementById("final-score");
+    const playerNameInput = document.getElementById("player-name");
+    const submitScoreButton = document.getElementById("submit-score");
+    const restartButton = document.getElementById("restart-button");
+    const leaderboardList = document.getElementById("leaderboard-list");
+    const leaderboardContainer = document.getElementById("leaderboard-container");
+
+    let pacmanPosition = { x: 1, y: 1 };
+    let ghosts = [];
+    let elements = [];
     let score = 0;
     let gameInterval;
     let gamePaused = false;
+    let powerUpActive = false;
+    let powerUpUsed = false;
+    let keysPressed = {};
+
+    const map = [
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1],
+        [1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1],
+        [1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1],
+        [1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1],
+        [1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+        [1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1],
+        [1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1],
+        [1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ];
 
     function updateScore() {
         scoreboard.innerText = `Score: ${score}`;
     }
 
     function createBoard() {
-        gameBoard.innerHTML = '';
-        for (let i = 0; i < boardSize; i++) {
-            for (let j = 0; j < boardSize; j++) {
-                const cell = document.createElement("div");
-                cell.classList.add("cell");
-                cell.setAttribute("data-x", j);
-                cell.setAttribute("data-y", i);
-                gameBoard.appendChild(cell);
+        gameBoard.innerHTML = "";
+        map.forEach((row, y) => {
+            row.forEach((cell, x) => {
+                const div = document.createElement("div");
+                div.classList.add("cell");
+                if (cell === 1) {
+                    div.classList.add("wall");
+                }
+                div.dataset.x = x;
+                div.dataset.y = y;
+                gameBoard.appendChild(div);
+            });
+        });
+    }
+
+    function placeElements() {
+        elements = [
+            { x: 2, y: 2, type: "coin" },
+            { x: 3, y: 3, type: "coin" }
+        ];
+    }
+
+    function addElementsToBoard() {
+        elements.forEach(element => {
+            const elementCell = document.querySelector(`[data-x="${element.x}"][data-y="${element.y}"]`);
+            if (element.type === "coin") {
+                elementCell.classList.add("coin");
+            } else if (element.type === "power-up") {
+                elementCell.classList.add("power-up");
+            }
+        });
+    }
+
+    function spawnPowerUp() {
+        if (!powerUpUsed) {
+            const emptyCells = [];
+            map.forEach((row, y) => {
+                row.forEach((cell, x) => {
+                    if (cell === 0 && !elements.some(e => e.x === x && e.y === y) && !ghosts.some(g => g.x === x && g.y === y) && (pacmanPosition.x !== x || pacmanPosition.y !== y)) {
+                        emptyCells.push({ x, y });
+                    }
+                });
+            });
+
+            if (emptyCells.length > 0) {
+                const randomIndex = Math.floor(Math.random() * emptyCells.length);
+                const powerUpCell = emptyCells[randomIndex];
+                elements.push({ x: powerUpCell.x, y: powerUpCell.y, type: "power-up" });
+                addElementsToBoard();
+                powerUpUsed = true;
+
+                setTimeout(() => {
+                    powerUpUsed = false;
+                    spawnPowerUp();
+                }, 15000); // Spawn power-up every 15 seconds
             }
         }
-        updatePacmanPosition();
-        updateGhostPositions();
-        addCoinsToBoard();
     }
 
-    function updatePacmanPosition() {
-        document.querySelectorAll(".cell").forEach(cell => {
-            cell.classList.remove("pacman");
-        });
-        const newPacmanCell = document.querySelector(`[data-x="${pacmanPosition.x}"][data-y="${pacmanPosition.y}"]`);
-        newPacmanCell.classList.add("pacman");
-    }
-
-    function updateGhostPositions() {
-        document.querySelectorAll(".cell").forEach(cell => {
-            cell.classList.remove("ghost");
-        });
-        ghosts.forEach(ghost => {
-            const newGhostCell = document.querySelector(`[data-x="${ghost.x}"][data-y="${ghost.y}"]`);
-            newGhostCell.classList.add("ghost");
-        });
-    }
-
-    function addCoinsToBoard() {
-        setInterval(() => {
-            if (!gamePaused && elements.filter(element => element.type === "coin").length < 5) {
-                const x = Math.floor(Math.random() * boardSize);
-                const y = Math.floor(Math.random() * boardSize);
-                elements.push({ type: "coin", x: x, y: y });
-                const coinCell = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
-                coinCell.classList.add("coin");
-            }
-        }, 5000); // Add a new coin every 5 seconds
-    }
-
-    function pickUpCoin() {
+    function pickUpElement() {
         elements.forEach((element, index) => {
-            if (pacmanPosition.x === element.x && pacmanPosition.y === element.y && element.type === "coin") {
-                const coinCell = document.querySelector(`[data-x="${element.x}"][data-y="${element.y}"]`);
-                coinCell.classList.remove("coin");
-                score += 20;
+            if (pacmanPosition.x === element.x && pacmanPosition.y === element.y) {
+                const elementCell = document.querySelector(`[data-x="${element.x}"][data-y="${element.y}"]`);
+                if (element.type === "coin") {
+                    score += 10;
+                } else if (element.type === "power-up") {
+                    score += 50;
+                    powerUpActive = true;
+                    setTimeout(() => {
+                        powerUpActive = false;
+                    }, 5000); // Power-up lasts for 5 seconds
+                }
                 updateScore();
                 elements.splice(index, 1);
+                elementCell.classList.remove("coin", "power-up");
             }
         });
     }
 
-    function movePacman(event) {
+    function movePacman() {
         if (gamePaused) return;
-        switch (event.key) {
-            case "ArrowUp":
-                if (pacmanPosition.y > 0) pacmanPosition.y--;
-                break;
-            case "ArrowDown":
-                if (pacmanPosition.y < boardSize - 1) pacmanPosition.y++;
-                break;
-            case "ArrowLeft":
-                if (pacmanPosition.x > 0) pacmanPosition.x--;
-                break;
-            case "ArrowRight":
-                if (pacmanPosition.x < boardSize - 1) pacmanPosition.x++;
-                break;
+
+        const newPosition = { ...pacmanPosition };
+
+        if (keysPressed.ArrowUp) {
+            newPosition.y--;
+        } else if (keysPressed.ArrowDown) {
+            newPosition.y++;
+        } else if (keysPressed.ArrowLeft) {
+            newPosition.x--;
+        } else if (keysPressed.ArrowRight) {
+            newPosition.x++;
         }
-        updatePacmanPosition();
-        pickUpCoin();
-        checkCollision();
+
+        if (map[newPosition.y][newPosition.x] !== 1) {
+            pacmanPosition = newPosition;
+            updatePacmanPosition();
+            pickUpElement();
+            checkCollision();
+        }
     }
 
     function moveGhosts() {
         if (gamePaused) return;
+
         ghosts.forEach(ghost => {
-            const directions = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
-            let direction;
-            if (Math.random() < 0.7) {
-                if (Math.abs(pacmanPosition.x - ghost.x) > Math.abs(pacmanPosition.y - ghost.y)) {
-                    direction = pacmanPosition.x > ghost.x ? "ArrowRight" : "ArrowLeft";
-                } else {
-                    direction = pacmanPosition.y > ghost.y ? "ArrowDown" : "ArrowUp";
-                }
-            } else {
-                direction = directions[Math.floor(Math.random() * directions.length)];
+            const newPosition = { ...ghost };
+
+            const directions = [];
+            if (pacmanPosition.x !== newPosition.x) {
+                directions.push(pacmanPosition.x < newPosition.x ? "ArrowRight" : "ArrowLeft");
             }
+            if (pacmanPosition.y !== newPosition.y) {
+                directions.push(pacmanPosition.y < newPosition.y ? "ArrowDown" : "ArrowUp");
+            }
+
+            const direction = directions[Math.floor(Math.random() * directions.length)];
+
             switch (direction) {
                 case "ArrowUp":
-                    if (ghost.y > 0) ghost.y--;
+                    if (map[newPosition.y - 1][newPosition.x] !== 1) newPosition.y--;
                     break;
                 case "ArrowDown":
-                    if (ghost.y < boardSize - 1) ghost.y++;
+                    if (map[newPosition.y + 1][newPosition.x] !== 1) newPosition.y++;
                     break;
                 case "ArrowLeft":
-                    if (ghost.x > 0) ghost.x--;
+                    if (map[newPosition.y][newPosition.x - 1] !== 1) newPosition.x--;
                     break;
                 case "ArrowRight":
-                    if (ghost.x < boardSize - 1) ghost.x++;
+                    if (map[newPosition.y][newPosition.x + 1] !== 1) newPosition.x++;
                     break;
             }
+
+            ghost.x = newPosition.x;
+            ghost.y = newPosition.y;
         });
+
         updateGhostPositions();
         checkCollision();
     }
@@ -139,45 +188,174 @@ document.addEventListener("DOMContentLoaded", () => {
     function checkCollision() {
         ghosts.forEach(ghost => {
             if (pacmanPosition.x === ghost.x && pacmanPosition.y === ghost.y) {
-                alert("Game Over!");
-                resetGame();
+                if (powerUpActive) {
+                    const ghostIndex = ghosts.indexOf(ghost);
+                    ghosts.splice(ghostIndex, 1); // Remove the ghost if power-up is active
+                    score += 100; // Bonus points for eating a ghost
+                    updateScore();
+                } else {
+                    gameOver();
+                }
             }
         });
     }
 
+    function updatePacmanPosition() {
+        document.querySelectorAll(".pacman").forEach(cell => cell.classList.remove("pacman"));
+        const pacmanCell = document.querySelector(`[data-x="${pacmanPosition.x}"][data-y="${pacmanPosition.y}"]`);
+        pacmanCell.classList.add("pacman");
+    }
+
+    function updateGhostPositions() {
+        document.querySelectorAll(".ghost").forEach(cell => cell.classList.remove("ghost"));
+        ghosts.forEach(ghost => {
+            const ghostCell = document.querySelector(`[data-x="${ghost.x}"][data-y="${ghost.y}"]`);
+            ghostCell.classList.add("ghost");
+        });
+    }
+
+    function gameOver() {
+        clearInterval(gameInterval);
+        document.removeEventListener("keydown", handleKeyDown);
+        gameOverModal.style.display = "flex";
+        finalScore.innerText = score;
+        fetchLeaderboard();
+    }
+
     function resetGame() {
-        pacmanPosition = { x: 0, y: 0 };
+        pacmanPosition = { x: 1, y: 1 };
         ghosts = [
             { x: 9, y: 9 },
             { x: 5, y: 5 },
-            { x: 3, y: 7 }
+            { x: 15, y: 5 }
         ];
         score = 0;
+        createBoard();
+        placeElements();
+        addElementsToBoard();
         updateScore();
-        updatePacmanPosition();
-        updateGhostPositions();
-        addCoinsToBoard();
+        spawnPowerUp();
     }
 
     function startGame() {
         mainScreen.style.display = "none";
         gameContainer.style.display = "flex";
-        createBoard();
-        document.addEventListener("keydown", movePacman);
-        gameInterval = setInterval(moveGhosts, 1000);
-        updateScore();
+        gameOverModal.style.display = "none";
+        resetGame();
+        document.addEventListener("keydown", handleKeyDown);
+        document.addEventListener("keyup", handleKeyUp);
+        gameInterval = setInterval(() => {
+            movePacman();
+            moveGhosts();
+        }, 200);
     }
 
     function pauseGame() {
         if (gamePaused) {
             gamePaused = false;
             pauseButton.innerText = "Pause";
+            gameInterval = setInterval(() => {
+                movePacman();
+                moveGhosts();
+            }, 200);
         } else {
             gamePaused = true;
             pauseButton.innerText = "Resume";
+            clearInterval(gameInterval);
         }
+    }
+
+    function handleKeyDown(event) {
+        keysPressed[event.key] = true;
+    }
+
+    function handleKeyUp(event) {
+        keysPressed[event.key] = false;
+    }
+
+    function restartGame() {
+        gameOverModal.style.display = "none";
+        resetGame();
+        startGame();
+    }
+
+    function fetchLeaderboard() {
+        fetch('get_leaderboard.php')
+            .then(response => response.json())
+            .then(data => {
+                leaderboardList.innerHTML = '';
+                data.forEach(entry => {
+                    const li = document.createElement('li');
+                    li.textContent = `${entry.player_name}: ${entry.score}`;
+                    leaderboardList.appendChild(li);
+                });
+            });
+    }
+
+    function submitScore() {
+        const playerName = playerNameInput.value.trim();
+        if (!playerName) {
+            alert('Please enter your name.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('player_name', playerName);
+        formData.append('score', score);
+
+        fetch('save_score.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.text())
+        .then(result => {
+            alert(result);
+            fetchLeaderboard();
+        });
     }
 
     startButton.addEventListener("click", startGame);
     pauseButton.addEventListener("click", pauseGame);
+    restartButton.addEventListener("click", restartGame);
+    submitScoreButton.addEventListener("click", submitScore);
+
+    // Fetch leaderboard on page load
+    fetchLeaderboard();
 });
+
+
+//
++-------------------------------------------------+
+|                      Player                     |
++-------------------------------------------------+
+| player_id (PK)                                  |
+| name                                            |
+| total_score                                     |
++-------------------------------------------------+
+
++-------------------------------------------------+
+|                      Score                      |
++-------------------------------------------------+
+| score_id (PK)                                   |
+| player_id (FK naar Player)                      |
+| score                                           |
+| date                                            |
++-------------------------------------------------+
+
++-------------------------------------------------+
+|                      Game                       |
++-------------------------------------------------+
+| game_id (PK)                                    |
+| player_id (FK naar Player)                      |
+| start_time                                      |
+| end_time                                        |
+| duration                                        |
++-------------------------------------------------+
+
++-------------------------------------------------+
+|                      Map                        |
++-------------------------------------------------+
+| map_id (PK)                                     |
+| map_name                                        |
+| map_data (BLOB)                                 |
++-------------------------------------------------+

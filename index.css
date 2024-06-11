@@ -8,6 +8,7 @@ body {
     margin: 0;
     height: 100vh;
     justify-content: center;
+    overflow: hidden;
 }
 
 #main-screen {
@@ -26,27 +27,49 @@ body {
 
 #game-board {
     display: grid;
-    grid-template-columns: repeat(10, 40px);
-    grid-template-rows: repeat(10, 40px);
+    grid-template-columns: repeat(21, 20px);
+    grid-template-rows: repeat(23, 20px);
     gap: 2px;
 }
 
 .cell {
-    width: 40px;
-    height: 40px;
-    border: 2px solid blue;
+    width: 20px;
+    height: 20px;
+    border: 1px solid blue;
+}
+
+.wall {
+    background-color: blue;
+}
+
+.path {
+    background-color: black;
 }
 
 .pacman {
     background-color: yellow;
     border-radius: 50%;
-    border-width: 0;
 }
 
 .ghost {
     background-color: red;
     border-radius: 50%;
-    border-width: 0;
+}
+
+.coin {
+    width: 10px;
+    height: 10px;
+    background-color: gold;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.power-up {
+    width: 15px;
+    height: 15px;
+    background-color: limegreen;
+    border-radius: 50%;
+    display: inline-block;
 }
 
 #scoreboard {
@@ -55,6 +78,7 @@ body {
     background-color: #333;
     color: white;
     padding: 10px;
+    text-align: center;
 }
 
 #pause-button {
@@ -66,17 +90,30 @@ body {
     cursor: pointer;
 }
 
-.coin {
-    width: 20px;
-    height: 20px;
-    background-color: gold;
-    border-radius: 50%;
-    display: inline-block;
-}
-
 #start-button {
     color: lightyellow;
     height: 20vh;
     border-radius: 25% 25% 25% 25%;
     width: 20vw;
+}
+
+#game-over-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    display: none;
+}
+
+#game-over-content {
+    background-color: white;
+    color: black;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
 }
