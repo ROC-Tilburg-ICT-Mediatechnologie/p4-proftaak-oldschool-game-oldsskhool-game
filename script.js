@@ -11,8 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const submitScoreButton = document.getElementById("submit-score");
     const restartButton = document.getElementById("restart-button");
     const leaderboardList = document.getElementById("leaderboard-list");
-    const leaderboardContainer = document.getElementById("leaderboard-container");
-
+    const playAgainButton = document.getElementById("play-again-button");
+    
     let pacmanPosition = { x: 1, y: 1 };
     let ghosts = [];
     let elements = [];
@@ -22,11 +22,11 @@ document.addEventListener("DOMContentLoaded", () => {
     let powerUpActive = false;
     let powerUpUsed = false;
     let keysPressed = {};
-
+    
     const map = [
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1],
-        [1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+        [1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1],
         [1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1],
         [1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1],
         [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1],
@@ -35,8 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
         [1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1],
         [1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1],
         [1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
     ];
 
     function updateScore() {
@@ -60,11 +59,36 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function placeElements() {
-        elements = [
-            { x: 2, y: 2, type: "coin" },
-            { x: 3, y: 3, type: "coin" }
-        ];
+        elements = [];
+    
+        // Voeg coins toe op specifieke locaties
+        elements.push({ x: 2, y: 2, type: "coin" });
+        elements.push({ x: 3, y: 3, type: "coin" });
+    
+        // Extra voorbeeld: Coins willekeurig plaatsen op lege cellen
+        for (let i = 0; i < 5; i++) {
+            let emptyCell = findEmptyCell();
+            elements.push({ x: emptyCell.x, y: emptyCell.y, type: "coin" });
+        }
     }
+    
+    function findEmptyCell() {
+        const emptyCells = [];
+        map.forEach((row, y) => {
+            row.forEach((cell, x) => {
+                if (cell === 0 && !elements.some(e => e.x === x && e.y === y) && !ghosts.some(g => g.x === x && g.y === y) && (pacmanPosition.x !== x || pacmanPosition.y !== y)) {
+                    emptyCells.push({ x, y });
+                }
+            });
+        });
+    
+        if (emptyCells.length > 0) {
+            const randomIndex = Math.floor(Math.random() * emptyCells.length);
+            return emptyCells[randomIndex];
+        }
+        return { x: 0, y: 0 }; // fallback, zou normaal niet mogen gebeuren als er lege cellen zijn
+    }
+    
 
     function addElementsToBoard() {
         elements.forEach(element => {
@@ -87,21 +111,29 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 });
             });
-
+    
             if (emptyCells.length > 0) {
                 const randomIndex = Math.floor(Math.random() * emptyCells.length);
                 const powerUpCell = emptyCells[randomIndex];
                 elements.push({ x: powerUpCell.x, y: powerUpCell.y, type: "power-up" });
                 addElementsToBoard();
                 powerUpUsed = true;
-
                 setTimeout(() => {
                     powerUpUsed = false;
-                    spawnPowerUp();
-                }, 15000); // Spawn power-up every 15 seconds
+                    elements = elements.filter(e => e.type !== "power-up"); // Verwijder de power-up na 5 seconden
+                    addElementsToBoard();
+                    setTimeout(() => {
+                        spawnPowerUp();
+                    }, 10000); // Wacht nog eens 10 seconden voordat een nieuwe power-up verschijnt
+                }, 5000); // Power-up blijft 5 seconden
             }
+        } else {
+            setTimeout(() => {
+                spawnPowerUp();
+            }, 15000); // Opnieuw proberen na 15 seconden als de power-up al gebruikt is
         }
     }
+    
 
     function pickUpElement() {
         elements.forEach((element, index) => {
@@ -114,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     powerUpActive = true;
                     setTimeout(() => {
                         powerUpActive = false;
-                    }, 5000); // Power-up lasts for 5 seconds
+                    }, 5000); 
                 }
                 updateScore();
                 elements.splice(index, 1);
@@ -122,240 +154,232 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-
-    function movePacman() {
-        if (gamePaused) return;
-
-        const newPosition = { ...pacmanPosition };
-
-        if (keysPressed.ArrowUp) {
-            newPosition.y--;
-        } else if (keysPressed.ArrowDown) {
-            newPosition.y++;
-        } else if (keysPressed.ArrowLeft) {
-            newPosition.x--;
-        } else if (keysPressed.ArrowRight) {
-            newPosition.x++;
-        }
-
-        if (map[newPosition.y][newPosition.x] !== 1) {
-            pacmanPosition = newPosition;
-            updatePacmanPosition();
-            pickUpElement();
-            checkCollision();
-        }
-    }
-
     function moveGhosts() {
         if (gamePaused) return;
-
+    
         ghosts.forEach(ghost => {
             const newPosition = { ...ghost };
-
-            const directions = [];
-            if (pacmanPosition.x !== newPosition.x) {
-                directions.push(pacmanPosition.x < newPosition.x ? "ArrowRight" : "ArrowLeft");
+    
+            // Bereken de richting naar de Pacman
+            const dx = pacmanPosition.x - ghost.x;
+            const dy = pacmanPosition.y - ghost.y;
+    
+            // Bepaal welke as het grootste verschil heeft en beweeg in die richting
+            if (Math.abs(dx) > Math.abs(dy)) {
+                // Horizontale beweging
+                newPosition.x += Math.sign(dx);
+            } else {
+                // Verticale beweging
+                newPosition.y += Math.sign(dy);
             }
-            if (pacmanPosition.y !== newPosition.y) {
-                directions.push(pacmanPosition.y < newPosition.y ? "ArrowDown" : "ArrowUp");
+    
+            // Controleer of de newPosition geen muur is, niet bezet is door een andere ghost en niet door Pacman
+            if (map[newPosition.y][newPosition.x] !== 1 &&
+                !ghosts.some(g => g.x === newPosition.x && g.y === newPosition.y) &&
+                (newPosition.x !== pacmanPosition.x || newPosition.y !== pacmanPosition.y)) {
+                ghost.x = newPosition.x;
+                ghost.y = newPosition.y;
             }
-
-            const direction = directions[Math.floor(Math.random() * directions.length)];
-
-            switch (direction) {
-                case "ArrowUp":
-                    if (map[newPosition.y - 1][newPosition.x] !== 1) newPosition.y--;
-                    break;
-                case "ArrowDown":
-                    if (map[newPosition.y + 1][newPosition.x] !== 1) newPosition.y++;
-                    break;
-                case "ArrowLeft":
-                    if (map[newPosition.y][newPosition.x - 1] !== 1) newPosition.x--;
-                    break;
-                case "ArrowRight":
-                    if (map[newPosition.y][newPosition.x + 1] !== 1) newPosition.x++;
-                    break;
-            }
-
-            ghost.x = newPosition.x;
-            ghost.y = newPosition.y;
         });
-
+    
+        // Update de posities van de geesten in de UI
         updateGhostPositions();
+    
+        // Controleer op botsingen met Pacman
         checkCollision();
-    }
-
-    function checkCollision() {
-        ghosts.forEach(ghost => {
-            if (pacmanPosition.x === ghost.x && pacmanPosition.y === ghost.y) {
-                if (powerUpActive) {
-                    const ghostIndex = ghosts.indexOf(ghost);
-                    ghosts.splice(ghostIndex, 1); // Remove the ghost if power-up is active
-                    score += 100; // Bonus points for eating a ghost
-                    updateScore();
-                } else {
-                    gameOver();
-                }
-            }
-        });
-    }
-
-    function updatePacmanPosition() {
-        document.querySelectorAll(".pacman").forEach(cell => cell.classList.remove("pacman"));
-        const pacmanCell = document.querySelector(`[data-x="${pacmanPosition.x}"][data-y="${pacmanPosition.y}"]`);
-        pacmanCell.classList.add("pacman");
-    }
-
-    function updateGhostPositions() {
-        document.querySelectorAll(".ghost").forEach(cell => cell.classList.remove("ghost"));
-        ghosts.forEach(ghost => {
-            const ghostCell = document.querySelector(`[data-x="${ghost.x}"][data-y="${ghost.y}"]`);
-            ghostCell.classList.add("ghost");
-        });
-    }
-
-    function gameOver() {
+    
+        // Controleer de winconditie
+        checkWinCondition();
+    
+        // Pas de bewegingssnelheid van de geesten aan op basis van de power-up status
+        const ghostSpeed = powerUpActive ? 150 : 135; // Aangepaste snelheden
         clearInterval(gameInterval);
-        document.removeEventListener("keydown", handleKeyDown);
-        gameOverModal.style.display = "flex";
-        finalScore.innerText = score;
-        fetchLeaderboard();
-    }
-
-    function resetGame() {
-        pacmanPosition = { x: 1, y: 1 };
-        ghosts = [
-            { x: 9, y: 9 },
-            { x: 5, y: 5 },
-            { x: 15, y: 5 }
-        ];
-        score = 0;
-        createBoard();
-        placeElements();
-        addElementsToBoard();
-        updateScore();
-        spawnPowerUp();
-    }
-
-    function startGame() {
-        mainScreen.style.display = "none";
-        gameContainer.style.display = "flex";
-        gameOverModal.style.display = "none";
-        resetGame();
-        document.addEventListener("keydown", handleKeyDown);
-        document.addEventListener("keyup", handleKeyUp);
         gameInterval = setInterval(() => {
             movePacman();
             moveGhosts();
-        }, 200);
+        }, ghostSpeed);
     }
-
-    function pauseGame() {
-        if (gamePaused) {
+    
+    function startGame() {
+        createBoard();
+        placeElements();
+        addElementsToBoard();
+        spawnPowerUp();
+    
+        pacmanPosition = { x: 1, y: 1 };
+    
+        // De spoken zullen na 3 seconden verschijnen
+        setTimeout(() => {
+            ghosts = [
+                { x: 5, y: 5 },
+                { x: 7, y: 7 },
+                { x: 9, y: 9 },
+            ];
+    
+            updateGhostPositions();
+            updatePacmanPosition();
+            updateScore();
+    
             gamePaused = false;
-            pauseButton.innerText = "Pause";
             gameInterval = setInterval(() => {
                 movePacman();
                 moveGhosts();
-            }, 200);
-        } else {
-            gamePaused = true;
-            pauseButton.innerText = "Resume";
-            clearInterval(gameInterval);
-        }
+            }, 135); // Normale snelheid bij start van het spel
+        }, 3000); // 3000 milliseconds = 3 seconds
     }
+    
+    
+            
+                function updatePacmanPosition() {
+                    const pacmanCell = document.querySelector(".pacman");
+                    if (pacmanCell) {
+                        pacmanCell.classList.remove("pacman");
+                    }
+                    const newPacmanCell = document.querySelector(`[data-x="${pacmanPosition.x}"][data-y="${pacmanPosition.y}"]`);
+                    if (newPacmanCell) {
+                        newPacmanCell.classList.add("pacman");
+                    }
+                }
+            
+                function updateGhostPositions() {
+                    document.querySelectorAll(".ghost").forEach(ghostCell => {
+                        ghostCell.classList.remove("ghost");
+                    });
+            
+                    ghosts.forEach(ghost => {
+                        const ghostCell = document.querySelector(`[data-x="${ghost.x}"][data-y="${ghost.y}"]`);
+                        if (ghostCell) {
+                            ghostCell.classList.add("ghost");
+                        }
+                    });
+                }
+            
 
-    function handleKeyDown(event) {
-        keysPressed[event.key] = true;
-    }
-
-    function handleKeyUp(event) {
-        keysPressed[event.key] = false;
-    }
-
-    function restartGame() {
-        gameOverModal.style.display = "none";
-        resetGame();
-        startGame();
-    }
-
-    function fetchLeaderboard() {
-        fetch('get_leaderboard.php')
-            .then(response => response.json())
-            .then(data => {
-                leaderboardList.innerHTML = '';
-                data.forEach(entry => {
-                    const li = document.createElement('li');
-                    li.textContent = `${entry.player_name}: ${entry.score}`;
-                    leaderboardList.appendChild(li);
+                function checkWinCondition() {
+                    if (ghosts.length === 0) {
+                        clearInterval(gameInterval);
+                        gamePaused = true;
+                        // Display winning animation or message
+                        // For example, show a winning message
+                        finalScore.innerText = `You won! Final Score: ${score}`;
+                        gameOverModal.style.display = "block";
+                    }
+                }
+                
+                function checkCollision() {
+                    ghosts.forEach(ghost => {
+                        if (pacmanPosition.x === ghost.x && pacmanPosition.y === ghost.y) {
+                            if (powerUpActive) {
+                                ghosts = ghosts.filter(g => g !== ghost);
+                            } else {
+                                endGame();
+                            }
+                        }
+                    });
+                }
+            
+                function endGame() {
+                    clearInterval(gameInterval);
+                    gamePaused = true;
+                    finalScore.innerText = `Score: ${score}`;
+                    gameOverModal.style.display = "block";
+                }
+            
+                function startGame() {
+                    createBoard();
+                    placeElements();
+                    addElementsToBoard();
+                    spawnPowerUp();
+            
+                    pacmanPosition = { x: 1, y: 1 };
+            
+                    // De spoken zullen na 3 seconden verschijnen
+                    setTimeout(() => {
+                        ghosts = [
+                            { x: 5, y: 5 },
+                            { x: 7, y: 7 },
+                            { x: 9, y: 9 },
+                        ];
+            
+                        updateGhostPositions();
+                        updatePacmanPosition();
+                        updateScore();
+            
+                        gamePaused = false;
+                        gameInterval = setInterval(() => {
+                            movePacman();
+                            moveGhosts();
+                        }, 135);
+                    }, 3000); // 3000 milliseconds = 3 seconds
+                }
+            
+                function pauseGame() {
+                    gamePaused = !gamePaused;
+                }
+            
+                function submitScore() {
+                    const playerName = playerNameInput.value;
+                    if (playerName) {
+                        fetch("save_score.php", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/x-www-form-urlencoded"
+                            },
+                            body: `player_name=${encodeURIComponent(playerName)}&score=${score}`
+                        }).then(response => response.text()).then(data => {
+                            alert(data);
+                            fetchLeaderboard();
+                        });
+                    } else {
+                        alert("Please enter your name");
+                    }
+                }
+            
+                function fetchLeaderboard() {
+                    fetch("get_leaderboard.php")
+                        .then(response => response.json())
+                        .then(data => {
+                            leaderboardList.innerHTML = "";
+                            data.forEach(entry => {
+                                const li = document.createElement("li");
+                                li.innerText = `${entry.player_name}: ${entry.score}`;
+                                leaderboardList.appendChild(li);
+                            });
+                        });
+                }
+            
+                startButton.addEventListener("click", () => {
+                    mainScreen.style.display = "none";
+                    gameContainer.style.display = "block";
+                    startGame();
+                });
+            
+                pauseButton.addEventListener("click", () => {
+                    pauseGame();
+                });
+            
+                submitScoreButton.addEventListener("click", () => {
+                    submitScore();
+                });
+            
+                restartButton.addEventListener("click", () => {
+                    gameOverModal.style.display = "none";
+                    gameContainer.style.display = "none";
+                    mainScreen.style.display = "block";
+                    score = 0;
+                });
+            
+                playAgainButton.addEventListener("click", () => {
+                    gameOverModal.style.display = "none";
+                    startGame();
+                });
+            
+                window.addEventListener("keydown", e => {
+                    keysPressed[e.key] = true;
+                });
+            
+                window.addEventListener("keyup", e => {
+                    keysPressed[e.key] = false;
                 });
             });
-    }
-
-    function submitScore() {
-        const playerName = playerNameInput.value.trim();
-        if (!playerName) {
-            alert('Please enter your name.');
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('player_name', playerName);
-        formData.append('score', score);
-
-        fetch('save_score.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.text())
-        .then(result => {
-            alert(result);
-            fetchLeaderboard();
-        });
-    }
-
-    startButton.addEventListener("click", startGame);
-    pauseButton.addEventListener("click", pauseGame);
-    restartButton.addEventListener("click", restartGame);
-    submitScoreButton.addEventListener("click", submitScore);
-
-    // Fetch leaderboard on page load
-    fetchLeaderboard();
-});
-
-
-//
-+-------------------------------------------------+
-|                      Player                     |
-+-------------------------------------------------+
-| player_id (PK)                                  |
-| name                                            |
-| total_score                                     |
-+-------------------------------------------------+
-
-+-------------------------------------------------+
-|                      Score                      |
-+-------------------------------------------------+
-| score_id (PK)                                   |
-| player_id (FK naar Player)                      |
-| score                                           |
-| date                                            |
-+-------------------------------------------------+
-
-+-------------------------------------------------+
-|                      Game                       |
-+-------------------------------------------------+
-| game_id (PK)                                    |
-| player_id (FK naar Player)                      |
-| start_time                                      |
-| end_time                                        |
-| duration                                        |
-+-------------------------------------------------+
-
-+-------------------------------------------------+
-|                      Map                        |
-+-------------------------------------------------+
-| map_id (PK)                                     |
-| map_name                                        |
-| map_data (BLOB)                                 |
-+-------------------------------------------------+
+            

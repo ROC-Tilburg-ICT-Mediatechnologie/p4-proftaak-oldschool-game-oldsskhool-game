@@ -28,7 +28,7 @@ body {
 #game-board {
     display: grid;
     grid-template-columns: repeat(21, 20px);
-    grid-template-rows: repeat(23, 20px);
+    grid-template-rows: repeat(13, 20px); /* Adjusted number of rows to 13 based on the map size */
     gap: 2px;
 }
 
@@ -91,10 +91,9 @@ body {
 }
 
 #start-button {
-    color: lightyellow;
+    background-color: yellow;
+    color: black;
     height: 20vh;
-    border-radius: 25% 25% 25% 25%;
-    width: 20vw;
 }
 
 #game-over-modal {
@@ -116,4 +115,15 @@ body {
     padding: 20px;
     border-radius: 10px;
     text-align: center;
+}
+
+@keyframes ghostAppear {
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
