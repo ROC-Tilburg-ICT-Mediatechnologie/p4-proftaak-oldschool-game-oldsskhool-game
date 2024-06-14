@@ -37,32 +37,7 @@ class Pacman {
             }
         }
     }
-    eatPowerUp() {
-        if (
-            powerUp.active &&
-            this.getMapX() === parseInt(powerUp.x / oneBlockSize) &&
-            this.getMapY() === parseInt(powerUp.y / oneBlockSize)
-        ) {
-            // Power up logic here
-            // For example, allow Pacman to eat ghosts for a limited time
-            for (let i = 0; i < ghosts.length; i++) {
-                if (ghosts[i].isEatable) {
-                    ghosts.splice(i, 1); // Remove the ghost
-                    i--; // Adjust index due to splice
-                }
-            }
-        }
-    }
 
-    update() {
-        pacman.moveProcess();
-        pacman.eat();
-        pacman.eatPowerUp(); // New line to handle power-up eating
-        updateGhosts();
-        if (pacman.checkGhostCollision(ghosts)) {
-            onGhostCollision();
-        }
-    }
     moveBackwards() {
         switch (this.direction) {
             case DIRECTION_RIGHT: // Right

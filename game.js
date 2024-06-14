@@ -89,15 +89,8 @@ let createNewPacman = () => {
 let gameLoop = () => {
     update();
     draw();
-    handlePowerUp();
 };
-let handlePowerUp = () => {
-    powerUp.spawnTime--;
-    if (powerUp.spawnTime <= 0) {
-        powerUp.spawn();
-        powerUp.spawnTime = 15 * fps; // Reset spawn timer
-    }
-};
+
 let gameInterval = setInterval(gameLoop, 1000 / fps);
 
 let restartPacmanAndGhosts = () => {
