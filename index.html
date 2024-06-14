@@ -1,37 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pac-Man Game</title>
-    <link rel="stylesheet" href="index.css">
+    <title>Pacman</title>
 </head>
-<body>
-    <h1>Pac-Man</h1>
-    <div id="main-screen">
-        <button id="start-button">Start Game</button>
+
+<body style="margin: 0; background-color: black;">
+    <canvas id="canvas" width="500" height="500"></canvas>
+    <div style="display:none;">
+        <img id="animation" src="animations.gif" width="140" height="20">
+        <img id="ghosts" src="ghost.png" width="140" height="20">
     </div>
-    <div id="game-container" style="display:none;">
-        <div id="game-board"></div>
-        <div id="scoreboard">Score: 0</div>
-        <div id="power-up-timer" style="display:none;"></div>
-        <button id="pause-button">Pause</button>
-    </div>
-    <div id="game-over-modal" style="display:none;">
-        <button id="close"></button>
-        <div id="game-over-content">
-            <h2>Game Over!</h2>
-            <p>Your score: <span id="final-score"></span></p>
-            <input type="text" id="player-name" placeholder="Enter your name">
-            <button id="submit-score">Submit Score</button>
-            <button id="restart-button">restart</button>
-            <button id="play-again-button">Play Again with Same User</button>
-        </div>
-    </div>
-    <div id="leaderboard-container">
-        <h2>Leaderboard</h2>
-        <ol id="leaderboard-list"></ol>
-    </div>
-    <script src="script.js"></script>
+    <script src="ghost.js"></script>
+    <script src="pacman.js"></script>
+    <script src="game.js"></script>
+   
 </body>
+
 </html>
