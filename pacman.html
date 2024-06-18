@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pacman</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: black;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #canvas {
+            display: block;
+            margin-top: 50px;
+            background-color: #000;
+        }
+
+        .leaderboard {
+            flex: 1;
+            max-width: 300px;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-left: 20px;
+        }
+
+        .leaderboard h2 {
+            margin-top: 0;
+            text-align: center;
+            color: #333;
+        }
+
+        #leaderboard-list {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+
+        #leaderboard-list li {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #leaderboard-list li span {
+            font-weight: bold;
+            color: #333;
+        }
+
+        #scoreboard {
+            color: white;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body style="margin: 0; background-color: black;">
+    <canvas id="canvas" width="500" height="500"></canvas>
+    <div id="scoreboard" style="color: white; text-align: center; margin-top: 20px;"></div>
+    <div class="leaderboard">
+        <!-- Hier komt de leaderboard -->
+        <h2>Leaderboard</h2>
+        <ul id="leaderboard-list">
+            <!-- Hier komen de scores -->
+        </ul>
+    </div>
+    <div style="display:none;">
+        <img id="animation" src="animations.gif" width="140" height="20">
+        <img id="ghosts" src="ghost.png" width="140" height="20">
+    </div>
+    <script src="ghost.js"></script>
+    <script src="pacman.js"></script>
+    <script src="game.js"></script>
+    <script>
+        let score = 0;
+
+        const submitScore = () => {
+            let playerName = prompt("Enter your name:");
+            if (!playerName) {
+                playerName = "Anonymous";
+            }
+            let xhr = new XMLHttpRequest();
+            xhr.open("POST", "submit_score.php", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    alert(xhr.responseText);
+                    fetchScores();  // Refresh the scoreboard after submitting the score
+                }
+            };
+            xhr.send("player_name=" + playerName + "&score=" + score);
+        };
+
+        const onGameOver = () => {
+            submitScore();
+            alert("Game Over! Your score is: " + score);
+        };
+
+        const fetchScores = () => {
+            let xhr = new XMLHttpRequest();
+            xhr.open("GET", "get_scores.php", true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    let scores = JSON.parse(xhr.responseText);
+                    let scoreboard = document.getElementById("scoreboard");
+                    scoreboard.innerHTML = "<h2>Top Scores</h2>";
+                    scores.forEach((score, index) => {
+                        scoreboard.innerHTML += `<p>${index + 1}. ${score.player_name}: ${score.score}</p>`;
+                    });
+                }
+            };
+            xhr.send();
+        };
+
+        fetchScores();
+
+        // Existing game logic here...
+
+        // Call fetchScores again to ensure it gets the latest data on page load
+        window.addEventListener("load", fetchScores);
+    </script>
+</body>
+</html>

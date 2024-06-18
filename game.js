@@ -13,7 +13,7 @@ const DIRECTION_UP = 3;
 const DIRECTION_LEFT = 2;
 const DIRECTION_BOTTOM = 1;
 let lives = 3;
-let ghostCount = 4;
+let ghostCount = 3;
 let ghostImageLocations = [
     { x: 0, y: 0 },
     { x: 176, y: 0 },
@@ -31,9 +31,7 @@ let wallSpaceWidth = oneBlockSize / 1.6;
 let wallOffset = (oneBlockSize - wallSpaceWidth) / 2;
 let wallInnerColor = "black";
 
-// we now create the map of the walls,
-// if 1 wall, if 0 not wall
-// 21 columns // 23 rows
+
 let map = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
@@ -76,6 +74,7 @@ let randomTargetsForGhosts = [
 //     }
 // }
 
+
 let createNewPacman = () => {
     pacman = new Pacman(
         oneBlockSize,
@@ -85,23 +84,36 @@ let createNewPacman = () => {
         oneBlockSize / 5
     );
 };
+// Verwijder het gebruik van setInterval en gebruik gameInterval
+let gameInterval;
 
 let gameLoop = () => {
     update();
     draw();
 };
 
-let gameInterval = setInterval(gameLoop, 1000 / fps);
+gameInterval = setInterval(gameLoop, 1000 / fps);
+
+// Voeg een functie toe om gameInterval te stoppen indien nodig
+let stopGameInterval = () => {
+    clearInterval(gameInterval);
+};
+
 
 let restartPacmanAndGhosts = () => {
     createNewPacman();
     createGhosts();
+    console.log("Pacman and ghosts are reset.");
 };
+
+
 
 let onGhostCollision = () => {
     lives--;
-    restartPacmanAndGhosts();
-    if (lives == 0) {
+    if (lives <= 0) {
+        onGameOver(); // Als levens op zijn, roep onGameOver aan
+    } else {
+        restartPacmanAndGhosts(); // Anders herstart Pacman en spoken
     }
 };
 
@@ -226,6 +238,35 @@ let drawWalls = () => {
     }
 };
 
+let submitScore = () => {
+    let playerName = prompt("Enter your name:");
+    if (!playerName) {
+        playerName = "Anonymous";
+    }
+
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", "submit_score.php", true);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            alert(xhr.responseText);
+            fetchScores();  // Refresh the scoreboard after submitting the score
+        }
+    };
+    xhr.send("player_name=" + playerName + "&score=" + score);
+};
+
+// Voeg een methode toe om het spel te resetten en resources op te schonen
+let resetGame = () => {
+    lives = 3;
+    score = 0;
+    stopGameInterval(); // Stop de game loop
+
+    // Voeg hier andere reset logica toe, zoals het resetten van Pacman en spoken
+    restartPacmanAndGhosts();
+    gameInterval = setInterval(gameLoop, 1000 / fps); // Start de game loop opnieuw
+};
+
 let createGhosts = () => {
     ghosts = [];
     for (let i = 0; i < ghostCount * 2; i++) {
@@ -251,19 +292,20 @@ gameLoop();
 
 window.addEventListener("keydown", (event) => {
     let k = event.keyCode;
-    setTimeout(() => {
-        if (k == 37 || k == 65) {
-            // left arrow or a
-            pacman.nextDirection = DIRECTION_LEFT;
-        } else if (k == 38 || k == 87) {
-            // up arrow or w
-            pacman.nextDirection = DIRECTION_UP;
-        } else if (k == 39 || k == 68) {
-            // right arrow or d
-            pacman.nextDirection = DIRECTION_RIGHT;
-        } else if (k == 40 || k == 83) {
-            // bottom arrow or s
-            pacman.nextDirection = DIRECTION_BOTTOM;
-        }
-    }, 1);
+    if (k == 37 || k == 65) {
+        // left arrow or a
+        pacman.nextDirection = DIRECTION_LEFT;
+    } else if (k == 38 || k == 87) {
+        // up arrow or w
+        pacman.nextDirection = DIRECTION_UP;
+    } else if (k == 39 || k == 68) {
+        // right arrow or d
+        pacman.nextDirection = DIRECTION_RIGHT;
+    } else if (k == 40 || k == 83) {
+        // bottom arrow or s
+        pacman.nextDirection = DIRECTION_BOTTOM;
+    }
 });
+
+
+

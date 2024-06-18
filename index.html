@@ -1,23 +1,94 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pacman</title>
-</head>
-
-<body style="margin: 0; background-color: black;">
-    <canvas id="canvas" width="500" height="500"></canvas>
-    <div style="display:none;">
-        <img id="animation" src="animations.gif" width="140" height="20">
-        <img id="ghosts" src="ghost.png" width="140" height="20">
-    </div>
-    <script src="ghost.js"></script>
-    <script src="pacman.js"></script>
-    <script src="game.js"></script>
+    <title>Pac-Man Intro Website</title>
+    <style>
    
-</body>
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Press Start 2P', cursive;
+            text-align: center;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .logo {
+            margin-bottom: 20px;
+            animation: movePacMan 5s linear infinite;
+            position: relative;
+        }
+        .welcome-message {
+            font-size: 24px;
+            margin-bottom: 40px;
+            animation: blinkText 1.5s infinite;
+        }
+        .start-button {
+            background-color: #ff0;
+            border: none;
+            padding: 20px 40px;
+            font-size: 24px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .start-button:hover {
+            background-color: #ffa500;
+        }
+        .ghosts {
+            position: absolute;
+            top: 30%;
+            animation: moveGhosts 5s linear infinite;
+        }
+        .ghost {
+            display: inline-block;
+            margin: 0 5px;
+        }
+        footer {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+        }
+        footer a {
+            color: #fff;
+            margin: 0 10px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+       
+        <div class="welcome-message">
+            PACMAN!<br>
+            Press "START" to Begin Your Adventure
+        </div>
+        <button class="start-button" onclick="startGame()">START</button>
+    </div>
+    <div class="ghosts">
+      
+    
+    </div>
+    <footer>
+        <a href="#"></a>
+        <a href="https://github.com/wavezy11" target=”_blank”>GITHUB</a>
+        <a href="#"></a>
+    </footer>
 
+    <script>
+        function startGame() {
+            window.location.href = 'pacman.html'; // Verwijzing naar de spelpagina
+        }
+    </script>
+</body>
 </html>
