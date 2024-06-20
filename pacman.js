@@ -1,5 +1,6 @@
 class Pacman {
     constructor(x, y, width, height, speed) {
+        
         this.x = x;
         this.y = y;
         this.width = width;
@@ -9,9 +10,14 @@ class Pacman {
         this.nextDirection = 4;
         this.frameCount = 7;
         this.currentFrame = 1;
+        this.radius = oneBlockSize / 3;
+        this.isSuperPacman = false;
+        this.superPacmanTimer = 0;
+
         setInterval(() => {
             this.changeAnimation();
         }, 100);
+        
     }
 
     moveProcess() {
@@ -22,34 +28,37 @@ class Pacman {
             return;
         }
     }
-
+    draw() {
+        createArc(this.x, this.y, this.radius, "#FFFF00");
+    }   
     eat() {
-        for (let i = 0; i < map.length; i++) {
-            for (let j = 0; j < map[0].length; j++) {
-                if (
-                    map[i][j] == 2 &&
-                    this.getMapX() == j &&
-                    this.getMapY() == i
-                ) {
-                    map[i][j] = 3;
-                    score++;
-                }
-            }
+        let currentBlockX = Math.floor(this.x / oneBlockSize);
+        let currentBlockY = Math.floor(this.y / oneBlockSize);
+
+        if (map[currentBlockY][currentBlockX] == 2) {
+            score++;
+            map[currentBlockY][currentBlockX] = 0;
+        } else if (map[currentBlockY][currentBlockX] == 4) {
+            this.isSuperPacman = true;
+            this.superPacmanTimer = 1000;
+            score += 10;
+            map[currentBlockY][currentBlockX] = 0;
         }
     }
 
+
     moveBackwards() {
         switch (this.direction) {
-            case DIRECTION_RIGHT: // Right
+            case DIRECTION_RIGHT:
                 this.x -= this.speed;
                 break;
-            case DIRECTION_UP: // Up
+            case DIRECTION_UP:
                 this.y += this.speed;
                 break;
-            case DIRECTION_LEFT: // Left
+            case DIRECTION_LEFT: 
                 this.x += this.speed;
                 break;
-            case DIRECTION_BOTTOM: // Bottom
+            case DIRECTION_BOTTOM: 
                 this.y -= this.speed;
                 break;
         }
@@ -57,16 +66,16 @@ class Pacman {
 
     moveForwards() {
         switch (this.direction) {
-            case DIRECTION_RIGHT: // Right
+            case DIRECTION_RIGHT:
                 this.x += this.speed;
                 break;
-            case DIRECTION_UP: // Up
+            case DIRECTION_UP: 
                 this.y -= this.speed;
                 break;
-            case DIRECTION_LEFT: // Left
+            case DIRECTION_LEFT:
                 this.x -= this.speed;
                 break;
-            case DIRECTION_BOTTOM: // Bottom
+            case DIRECTION_BOTTOM:
                 this.y += this.speed;
                 break;
         }
@@ -169,4 +178,16 @@ class Pacman {
         );
         canvasContext.restore();
     }
+
+    update() {
+        if (this.isSuperPacman) {
+            this.superPacmanTimer--;
+            if (this.superPacmanTimer <= 0) {
+                this.isSuperPacman = false;
+            }
+        }
+    }
+
+
+
 }

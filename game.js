@@ -21,7 +21,7 @@ let ghostImageLocations = [
     { x: 176, y: 121 },
 ];
 
-// Game variables
+// Game variablen
 let fps = 30;
 let pacman;
 let oneBlockSize = 20;
@@ -31,10 +31,9 @@ let wallSpaceWidth = oneBlockSize / 1.6;
 let wallOffset = (oneBlockSize - wallSpaceWidth) / 2;
 let wallInnerColor = "black";
 
-
 let map = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+    [1, 2, 2, 2, 2, 4, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
     [1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1],
     [1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1],
     [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
@@ -84,7 +83,7 @@ let createNewPacman = () => {
         oneBlockSize / 5
     );
 };
-// Verwijder het gebruik van setInterval en gebruik gameInterval
+
 let gameInterval;
 
 let gameLoop = () => {
@@ -94,7 +93,7 @@ let gameLoop = () => {
 
 gameInterval = setInterval(gameLoop, 1000 / fps);
 
-// Voeg een functie toe om gameInterval te stoppen indien nodig
+// stoppen van de loop 
 let stopGameInterval = () => {
     clearInterval(gameInterval);
 };
@@ -106,8 +105,12 @@ let restartPacmanAndGhosts = () => {
     console.log("Pacman and ghosts are reset.");
 };
 
+let onGameOver = () => {
+    submitScore();
+    alert("Game Over! Your score is: " + score);
+};
 
-
+//wanneer de ghosts en de pacman
 let onGhostCollision = () => {
     lives--;
     if (lives <= 0) {
@@ -115,6 +118,16 @@ let onGhostCollision = () => {
     } else {
         restartPacmanAndGhosts(); // Anders herstart Pacman en spoken
     }
+};
+let checkWinCondition = () => {
+    for (let i = 0; i < map.length; i++) {
+        for (let j = 0; j < map[0].length; j++) {
+            if (map[i][j] === 2) {
+                return false; // Food item still exists, game continues
+            }
+        }
+    }
+    return true; // All food items have been collected, player wins
 };
 
 let update = () => {
@@ -125,7 +138,6 @@ let update = () => {
         onGhostCollision();
     }
 };
-
 let drawFoods = () => {
     for (let i = 0; i < map.length; i++) {
         for (let j = 0; j < map[0].length; j++) {
@@ -137,10 +149,20 @@ let drawFoods = () => {
                     oneBlockSize / 3,
                     "#FEB897"
                 );
+            } else if (map[i][j] == 4) {
+                console.log("Drawing powerup at", i, j);
+                createRect(
+                    j * oneBlockSize + oneBlockSize / 3,
+                    i * oneBlockSize + oneBlockSize / 3,
+                    oneBlockSize / 3,
+                    oneBlockSize / 3,
+                    "purple"
+                );
             }
         }
     }
 };
+
 
 let drawRemainingLives = () => {
     canvasContext.font = "20px Emulogic";
@@ -306,6 +328,5 @@ window.addEventListener("keydown", (event) => {
         pacman.nextDirection = DIRECTION_BOTTOM;
     }
 });
-
 
 

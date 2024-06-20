@@ -22,7 +22,7 @@
             background-color: #000;
         }
 
-        .leaderboard {
+        /* .leaderboard {
             flex: 1;
             max-width: 300px;
             background-color: #fff;
@@ -56,24 +56,42 @@
         #leaderboard-list li span {
             font-weight: bold;
             color: #333;
-        }
+        } */
 
         #scoreboard {
             color: white;
             text-align: center;
             margin-top: 20px;
         }
+
+        .game-over-form {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 2px solid black;
+            z-index: 1000;
+        }
     </style>
 </head>
-<body style="margin: 0; background-color: black;">
+<body>
     <canvas id="canvas" width="500" height="500"></canvas>
-    <div id="scoreboard" style="color: white; text-align: center; margin-top: 20px;"></div>
+    <div id="scoreboard"></div>
     <div class="leaderboard">
-        <!-- Hier komt de leaderboard -->
         <h2>Leaderboard</h2>
-        <ul id="leaderboard-list">
-            <!-- Hier komen de scores -->
-        </ul>
+        <ul id="leaderboard-list"></ul>
+    </div>
+    <div class="game-over-form" id="game-over-form">
+        <h2>Game Over!</h2>
+        <p>Your score is: <span id="game-over-score"></span></p>
+        <form id="score-form" onsubmit="submitScore(event)">
+            <label for="player-name">Enter your name:</label><br>
+            <input type="text" id="player-name" name="player-name" required><br><br>
+            <button type="submit">Submit</button>
+        </form>
     </div>
     <div style="display:none;">
         <img id="animation" src="animations.gif" width="140" height="20">
@@ -82,11 +100,14 @@
     <script src="ghost.js"></script>
     <script src="pacman.js"></script>
     <script src="game.js"></script>
+  
     <script>
         let score = 0;
+        let formDisplayed = false;
 
-        const submitScore = () => {
-            let playerName = prompt("Enter your name:");
+        const submitScore = (event) => {
+            event.preventDefault();
+            let playerName = document.getElementById("player-name").value;
             if (!playerName) {
                 playerName = "Anonymous";
             }
@@ -95,16 +116,26 @@
             xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4 && xhr.status === 200) {
-                    alert(xhr.responseText);
-                    fetchScores();  // Refresh the scoreboard after submitting the score
+                    let response = xhr.responseText;
+                    if (response === "success") {
+                        alert("Score submitted successfully!");
+                    } else {
+                        alert("Error submitting score. Please try again.");
+                    }
+                    if (confirm("Do you want to return to the main page?")) {
+                        window.location.href = "index.html";
+                    }
                 }
             };
             xhr.send("player_name=" + playerName + "&score=" + score);
+            formDisplayed = true;
         };
 
         const onGameOver = () => {
-            submitScore();
-            alert("Game Over! Your score is: " + score);
+            if (!formDisplayed) {
+                document.getElementById("game-over-score").textContent = score;
+                document.getElementById("game-over-form").style.display = "block";
+            }
         };
 
         const fetchScores = () => {
